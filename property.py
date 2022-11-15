@@ -35,17 +35,17 @@ class Property(Mapping):
 		self._reader.seek(self._pos + 2)
 
 		entry_count = self._reader.read_wz_int()
-		for i in range(entry_count):
+		for _ in range(entry_count):
 			variant_name = self._reader.read_wz_uol()
 			variant_type = self._reader.read_wz_int()
 
 			if variant_type == 0x00:
 				# Null
 				self._children[variant_name] = None
-			elif variant_type == 0x02 or variant_type == 0x0B:
+			elif variant_type in [0x02, 0x0B]:
 				# Int 16
 				self._children[variant_name] = self._reader.read_int_16()
-			elif variant_type == 0x03 or variant_type == 0x13:
+			elif variant_type in [0x03, 0x13]:
 				# Wz int
 				self._children[variant_name] = self._reader.read_wz_int()
 			elif variant_type == 0x04:
@@ -65,9 +65,9 @@ class Property(Mapping):
 				end_pos = self._reader.read_uint_32() + self._reader.pos()
 				child_object_type = self._reader.read_uint_8()
 
-				if child_object_type == 0x00 or child_object_type == 0x73:
+				if child_object_type in [0x00, 0x73]:
 					self._children[variant_name] = parse_object(self._reader)
-				elif child_object_type == 0x01 or child_object_type == 0x1B:
+				elif child_object_type in [0x01, 0x1B]:
 					self._children[variant_name] = parse_object(self._reader, object_type=self._reader.read_wz_uol())
 
 				self._reader.seek(end_pos)

@@ -43,10 +43,7 @@ class BinaryReader:
 
 	def read_wz_int(self):
 		sb = self.read_int_8()
-		if sb == -128:
-			return self.read_int_32()
-		else:
-			return sb
+		return self.read_int_32() if sb == -128 else sb
 
 	def read_wz_float(self):
 		flag = self.read_uint_8()
@@ -57,10 +54,7 @@ class BinaryReader:
 
 	def read_wz_long(self):
 		sb = self.read_int_8()
-		if sb == -128:
-			return self.read_int_64()
-		else:
-			return sb
+		return self.read_int_64() if sb == -128 else sb
 
 	def read_wz_string(self):
 		length = self.read_int_8()
@@ -87,18 +81,14 @@ class BinaryReader:
 			return ret_str
 		elif length < 0:
 			# ASCII
-			if length == -128:
-				length = self.read_int_32()
-			else:
-				length = -length
-
+			length = self.read_int_32() if length == -128 else -length
 			if length <= 0:
 				return None
 
 			mask = 0xAA
 			ret_str = ""
 
-			for i in range(0, length):
+			for i in range(length):
 				b = self.read_uint_8()
 				b = b ^ (mask + i)
 				b = b ^ self.key.at(i)
@@ -109,11 +99,11 @@ class BinaryReader:
 	def read_wz_uol(self):
 		flag = self.read_uint_8()
 
-		if flag == 0x00 or flag == 0x73:
+		if flag in [0x00, 0x73]:
 			return self.read_wz_string()
-		elif flag == 0x01 or flag == 0x1B:
+		elif flag in [0x01, 0x1B]:
 			offset = self.read_uint_32()
-			
+
 			original_pos = self.pos()
 			self.seek(original_pos + offset)
 			ret_str = self.read_wz_string()
